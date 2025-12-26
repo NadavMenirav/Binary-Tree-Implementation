@@ -42,3 +42,11 @@ void inorderTraversal(const TreeNode* root) {
     printf("%d ", root->data);
     inorderTraversal(root->right);
 }
+
+// Prints the preorder traversal
+void preorderTraversal(const TreeNode* root) {
+    if (root == NULL) return;
+    printf("%d ", root->data);
+    preorderTraversal(root->left);
+    preorderTraversal(root->right);
+}
