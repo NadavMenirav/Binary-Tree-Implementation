@@ -50,3 +50,11 @@ void preorderTraversal(const TreeNode* root) {
     preorderTraversal(root->left);
     preorderTraversal(root->right);
 }
+
+// Prints the post order traversal
+void postorderTraversal(const TreeNode* root) {
+    if (root == NULL) return;
+    postorderTraversal(root->left);
+    postorderTraversal(root->right);
+    printf("%d ", root->data);
+}
