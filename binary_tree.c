@@ -34,3 +34,11 @@ TreeNode* findMin(const TreeNode* root) {
 
     return findMin(root->left);
 }
+
+// Prints the inorder traversal
+void inorderTraversal(const TreeNode* root) {
+    if (root == NULL) return;
+    inorderTraversal(root->left);
+    printf("%d ", root->data);
+    inorderTraversal(root->right);
+}
