@@ -7,4 +7,6 @@ TreeNode* createNode(int data) {
     node->data = data;
     node->left = NULL;
     node->right = NULL;
+
+    return node;
 }
