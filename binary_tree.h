@@ -25,7 +25,7 @@ TreeNode* insertNode(TreeNode* root, int data);
 TreeNode* deleteNode(TreeNode* root, int data);
 
 // This function checks whether a value exists in the tree
-bool searchTree(TreeNode* root, int data);
+bool searchNode(TreeNode* root, int data);
 
 // The function returns the minimus value in the tree
 TreeNode* findMin(TreeNode* root);
