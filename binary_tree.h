@@ -25,10 +25,10 @@ TreeNode* insertNode(TreeNode* root, int data);
 TreeNode* deleteNode(TreeNode* root, int data);
 
 // This function checks whether a value exists in the tree
-bool searchNode(TreeNode* root, int data);
+bool searchNode(const TreeNode* root, int data);
 
 // The function returns the minimus value in the tree
-TreeNode* findMin(TreeNode* root);
+TreeNode* findMin(const TreeNode* root);
 
 // This function prints the inorder traversal
 void inorderTraversal(TreeNode* root);
