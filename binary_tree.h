@@ -7,12 +7,14 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <omp.h>
 
 // The binary tree
 typedef struct TreeNode {
     int data;
     struct TreeNode *left;
     struct TreeNode *right;
+    omp_lock_t lock;
 } TreeNode;
 
 // This function will create a new binary search tree

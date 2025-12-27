@@ -1,7 +1,6 @@
 #include "binary_tree.h"
 
 #include <stdlib.h>
-#include <omp.h>
 
 // This function checks whether a TreeNode* is a leaf. Null is not a leaf.
 static inline bool isLeaf(const TreeNode* root);
@@ -16,6 +15,7 @@ TreeNode* createNode(const int data) {
     node->data = data;
     node->left = NULL;
     node->right = NULL;
+    omp_init_lock(&node->lock);
 
     return node;
 }
@@ -241,14 +241,18 @@ void postorderTraversal(const TreeNode* root) {
 
 // Free the tree
 void freeTree(TreeNode* root) {
+    // 1. Base case: if the node is NULL, there's nothing to do
     if (root == NULL) return;
 
-    if (isLeaf(root)) {
-        free(root);
-        return;
-    }
+    // 2. Recursively free the left subtree
     freeTree(root->left);
+
+    // 3. Recursively free the right subtree
     freeTree(root->right);
+
+    // 4. Finally, free the current node
+    omp_destroy_lock(&(root->lock));
+    free(root);
 }
 
 // This function checks whether a TreeNode* is a leaf
