@@ -19,18 +19,36 @@ TreeNode* createNode(const int data) {
     return node;
 }
 
-// // This function inserts a new node to the tree
-// TreeNode* insertNode(TreeNode* root, const int data) {
-//
-//     // Create the new node
-//     TreeNode* node = createNode(data);
-//
-//     // Now, we need to decide whether the new node should be in the left or right tree spanned by the root
-//
-//
-//
-//     return root;
-// }
+// This function inserts a new node to the tree
+TreeNode* insertNode(TreeNode* root, const int data) {
+
+    // If we receive a NULL root, we will create a new root and return the new tree. The recursion will not get here.
+    if (root == NULL) {
+        return createNode(data);
+    }
+
+
+    // Now, we need to decide whether the new node should be in the left or right tree spanned by the root
+    if (data <= root->data && hasLeftChild(root)) {
+        insertNode(root->left, data);
+    }
+
+    else if (data > root->data && hasRightChild(root)) {
+        insertNode(root->right, data);
+    }
+
+    // Here we know that we need to insert the new node as a left child of current 'root'
+    else if (data <= root->data && !hasLeftChild(root)) {
+        root->left = createNode(data);
+    }
+
+    // Here we know that we need to insert the new node as a right child of current 'root'
+    else if (data > root->data && !hasRightChild(root)) {
+        root->right = createNode(data);
+    }
+
+    return root;
+}
 
 // This function checks whether a given value is in the tree
 bool searchNode(const TreeNode* root, const int data) {
