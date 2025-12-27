@@ -183,14 +183,24 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
 // This function checks whether a given value is in the tree
 bool searchNode(const TreeNode* root, const int data) {
 
-    // If we have gone over the entire tree without finding, return false
-    if (root == NULL) return false;
+    const TreeNode* node = root;
 
-    // If we found the value, return true
-    if (root->data == data) return true;
+    while (node) {
 
-    // We are in a search tree so if our data is smaller than root - go to left child. Otherwise, right child
-    return data < root->data? searchNode(root->left, data): searchNode(root->right, data);
+        // If we found the data
+        if (node->data == data) return true;
+
+        // We should go left
+        if (data <= node->data) {
+            node = node->left;
+        }
+
+        // We should go right
+        else if (data > node->data) {
+            node = node->right;
+        }
+    }
+    return false;
 }
 
 // This function returns the node with the minimal value in the tree
