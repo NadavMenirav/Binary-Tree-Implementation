@@ -2,6 +2,9 @@
 
 #include <stdlib.h>
 
+// This function checks whether a TreeNode* is a leaf. Null is not a leaf.
+inline bool isLeaf(const TreeNode* root);
+
 // Create a new binary search tree
 TreeNode* createNode(const int data) {
     TreeNode* node = (TreeNode*)malloc(sizeof(TreeNode));
@@ -57,4 +60,17 @@ void postorderTraversal(const TreeNode* root) {
     postorderTraversal(root->left);
     postorderTraversal(root->right);
     printf("%d ", root->data);
+}
+
+// Free the tree
+void freeTree(TreeNode* root) {
+    if (isLeaf(root)) free(root);
+    freeTree(root->left);
+    freeTree(root->right);
+}
+
+// This function checks whether a TreeNode* is a leaf
+inline bool isLeaf(const TreeNode* root) {
+    if (root == NULL) return false;
+    return root->left == NULL && root->right == NULL;
 }

@@ -39,4 +39,7 @@ void preorderTraversal(TreeNode* root);
 // This function prints the postorder traversal
 void postorderTraversal(TreeNode* root);
 
+// This function free the tree
+void freeTree(TreeNode* root);
+
 #endif //BINARY_TREE_H
