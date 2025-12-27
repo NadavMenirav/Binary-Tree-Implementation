@@ -50,6 +50,132 @@ TreeNode* insertNode(TreeNode* root, const int data) {
     return root;
 }
 
+/*
+ * This function deletes a node from the tree.
+ * If the node we want to delete is a leaf we just delete it by freeing the memory and setting the parent child to NULL
+ * If the node we want to delete has only 1 child we delete it and replace and set the parent to point at this  child
+ * If the node we want to delete has two children we replace it with the minimal value in the right tree and delete
+ */
+TreeNode* deleteNode(TreeNode* root, const int data) {
+
+    TreeNode* node = root, *parent = NULL;
+    bool isOnlyLeft = false, isOnlyRight = false;
+
+    // If we received a NULL we don't delete anything
+    if (root == NULL) {
+        return NULL;
+    }
+
+    // Finding the place to delete from
+    while (node != NULL) {
+
+        // If we found the node to delete
+        if (data == node->data) break;
+
+        // We didn't yet found the node to delete, but we know that it is in the left subtree of current 'node'
+        if (data <= node->data && hasLeftChild(node)) {
+            parent = node;
+            node = node->left;
+        }
+
+        // We didn't yet found the node to delete, but we know that it is in the right subtree of current 'node'
+        else if (data > node->data && hasRightChild(node)) {
+            parent = node;
+            node = node->right;
+        }
+    }
+
+    // If the given value is not in the tree
+    if (node == NULL) return root;
+
+    // Now we distinguish between 3 cases
+    // Case 1: the deleted node is a leaf. In this case we need to just make the parent point to null and free the node
+    if (isLeaf(node)) {
+
+        // If the given node is the root, it means this tree is only one node and we should return null
+        if (!parent) {
+            free(node);
+            return NULL;
+        }
+
+        if (parent->left == node) parent->left = NULL;
+        else parent->right = NULL;
+        free(node);
+        return root;
+    }
+
+    // Case 2: the deleted node has only one child. in this case we just make the parent point to the child and free
+    isOnlyLeft = hasLeftChild(node) && !hasRightChild(node);
+    isOnlyRight = hasRightChild(node) && !hasLeftChild(node);
+    if (isOnlyLeft || isOnlyRight) {
+
+        // If the deleted node is the root, we just make the child the new root
+        if (!parent) {
+            if (isOnlyLeft) {
+                root = node->left;
+            }
+
+            else {
+                root = node->right;
+            }
+
+            free(node);
+            return root;
+        }
+
+        if (parent->left == node) {
+            if (isOnlyLeft) {
+                parent->left = node->left;
+            }
+            else {
+                parent->left = node->right;
+            }
+        }
+        else {
+            if (isOnlyLeft) {
+                parent->right = node->left;
+            }
+            else {
+                parent->right = node->right;
+            }
+        }
+        free(node);
+        return root;
+
+    }
+
+
+
+    // Case 3: the deleted node has two children. In this case we find the minimal value in right subtree and replace
+    if (hasLeftChild(node) && hasRightChild(node)) {
+        TreeNode* min_node_in_right_subtree = node->right, *parent_min_node = node;
+        while (min_node_in_right_subtree != NULL) {
+            if (min_node_in_right_subtree->left == NULL) break;
+
+            parent_min_node = min_node_in_right_subtree;
+            min_node_in_right_subtree = min_node_in_right_subtree->left;
+        }
+
+        // We keep the value of the min node, it will replace 'node'
+        const int replacement = min_node_in_right_subtree->data;
+
+        // Delete the replacement node
+        if (parent_min_node->left == min_node_in_right_subtree) {
+            parent_min_node->left = min_node_in_right_subtree->right;
+        }
+
+        else {
+            parent_min_node->right = min_node_in_right_subtree->right;
+        }        free(min_node_in_right_subtree);
+
+        // Replace 'node' with the min node
+        node->data = replacement;
+
+    }
+    return root;
+}
+
+
 // This function checks whether a given value is in the tree
 bool searchNode(const TreeNode* root, const int data) {
 
