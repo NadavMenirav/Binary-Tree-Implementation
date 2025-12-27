@@ -3,11 +3,11 @@
 #include <stdlib.h>
 
 // This function checks whether a TreeNode* is a leaf. Null is not a leaf.
-inline bool isLeaf(const TreeNode* root);
+static inline bool isLeaf(const TreeNode* root);
 
 // This short inline functions check whether a root has a left and right child
-inline bool hasLeftChild(const TreeNode* root);
-inline bool hasRightChild(const TreeNode* root);
+static inline bool hasLeftChild(const TreeNode* root);
+static inline bool hasRightChild(const TreeNode* root);
 
 // Create a new binary search tree
 TreeNode* createNode(const int data) {
@@ -110,17 +110,17 @@ void freeTree(TreeNode* root) {
 }
 
 // This function checks whether a TreeNode* is a leaf
-inline bool isLeaf(const TreeNode* root) {
+static inline bool isLeaf(const TreeNode* root) {
     if (root == NULL) return false;
     return root->left == NULL && root->right == NULL;
 }
 
 // This function checks whether a root has a left child
-inline bool hasLeftChild(const TreeNode* root) {
+static inline bool hasLeftChild(const TreeNode* root) {
     return root != NULL && root->left != NULL;
 }
 
 // This function checks whether a root has a right child
-inline bool hasRightChild(const TreeNode* root) {
+static inline bool hasRightChild(const TreeNode* root) {
     return root != NULL && root->right != NULL;
 }
