@@ -205,12 +205,13 @@ bool searchNode(const TreeNode* root, const int data) {
 
 // This function returns the node with the minimal value in the tree
 TreeNode* findMin(const TreeNode* root) {
+
+    // If the tree is non-existent we return null
     if (root == NULL) return NULL;
 
-    // To find the minimal value in the tree we start from the root and continue to go left
-    if (root->left == NULL) return (TreeNode*)root;
-
-    return findMin(root->left);
+    const TreeNode* node = root;
+    while (node->left != NULL) node = node->left;
+    return (TreeNode*)node;
 }
 
 // Prints the inorder traversal
