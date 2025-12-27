@@ -75,7 +75,6 @@ TreeNode* insertNode(TreeNode* root, const int data) {
  * If the node we want to delete has two children we replace it with the minimal value in the right tree and delete
  */
 TreeNode* deleteNode(TreeNode* root, const int data) {
-
     TreeNode* node = root, *parent = NULL;
     bool isOnlyLeft = false, isOnlyRight = false;
 
@@ -84,27 +83,43 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
         return NULL;
     }
 
+    // Locking the node
+    omp_set_lock(&node->lock);
+    omp_lock_t* lock_to_free = NULL;
+
     // Finding the place to delete from
     while (node != NULL) {
+
+        if (lock_to_free) omp_unset_lock(lock_to_free);
+
+        lock_to_free = &node->lock;
+        if ((hasLeftChild(node) && node->left->data == data) || (hasRightChild(node) && node->right->data == data)) {
+            lock_to_free = NULL;
+        }
 
         // If we found the node to delete
         if (data == node->data) break;
 
         // We didn't yet found the node to delete, but we know that it is in the left subtree of current 'node'
         if (data <= node->data && hasLeftChild(node)) {
+            omp_set_lock(&node->left->lock);
             parent = node;
             node = node->left;
         }
 
         // We didn't yet found the node to delete, but we know that it is in the right subtree of current 'node'
         else if (data > node->data && hasRightChild(node)) {
+            omp_set_lock(&node->right->lock);
             parent = node;
             node = node->right;
         }
     }
 
     // If the given value is not in the tree
-    if (node == NULL) return root;
+    if (node == NULL) {
+        if (lock_to_free) omp_unset_lock(lock_to_free);
+        return root;
+    }
 
     // Now we distinguish between 3 cases
     // Case 1: the deleted node is a leaf. In this case we need to just make the parent point to null and free the node
@@ -118,6 +133,8 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
 
         if (parent->left == node) parent->left = NULL;
         else parent->right = NULL;
+        omp_unset_lock(&parent->lock);
+        omp_destroy_lock(&node->lock);
         free(node);
         return root;
     }
@@ -137,6 +154,7 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
                 root = node->right;
             }
 
+            omp_destroy_lock(&node->lock);
             free(node);
             return root;
         }
@@ -157,6 +175,8 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
                 parent->right = node->right;
             }
         }
+        omp_unset_lock(&parent->lock);
+        omp_destroy_lock(&node->lock);
         free(node);
         return root;
 
@@ -166,6 +186,10 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
 
     // Case 3: the deleted node has two children. In this case we find the minimal value in right subtree and replace
     if (hasLeftChild(node) && hasRightChild(node)) {
+
+        // // We don't need the parent anymore
+        // omp_unset_lock()
+
         TreeNode* min_node_in_right_subtree = node->right, *parent_min_node = node;
         while (min_node_in_right_subtree != NULL) {
             if (min_node_in_right_subtree->left == NULL) break;
