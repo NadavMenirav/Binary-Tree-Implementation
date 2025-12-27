@@ -221,3 +221,43 @@ CUNIT_TEST(delete_non_root_two_descendants)
     CUNIT_ASSERT_PTR_NULL(node_10->right->right->left);
     CUNIT_ASSERT_PTR_NULL(node_10->right->right->right);
 }
+
+CUNIT_TEST(delete_non_root_min_in_right_subtree_is_not_null)
+{
+    TreeNode* node_10 = createNode(10);
+    node_10 = insertNode(node_10, 5);
+    node_10 = insertNode(node_10, 15);
+    node_10 = insertNode(node_10, 3);
+    node_10 = insertNode(node_10, 7);
+    node_10 = insertNode(node_10, 12);
+    node_10 = insertNode(node_10, 18);
+    node_10 = insertNode(node_10, 8);
+
+    node_10 = deleteNode(node_10, 5);
+    CUNIT_ASSERT_PTR_NOT_NULL(node_10);
+    CUNIT_ASSERT_INT_EQ(node_10->data, 10);
+
+    CUNIT_ASSERT_PTR_NOT_NULL(node_10->left);
+    CUNIT_ASSERT_INT_EQ(node_10->left->data, 7);
+    CUNIT_ASSERT_PTR_NOT_NULL(node_10->left->right);
+    CUNIT_ASSERT_INT_EQ(node_10->left->right->data, 8);
+    CUNIT_ASSERT_PTR_NULL(node_10->left->right->left);
+    CUNIT_ASSERT_PTR_NULL(node_10->left->right->right);
+    CUNIT_ASSERT_PTR_NOT_NULL(node_10->left->left);
+    CUNIT_ASSERT_INT_EQ(node_10->left->left->data, 3);
+    CUNIT_ASSERT_PTR_NULL(node_10->left->left->left);
+    CUNIT_ASSERT_PTR_NULL(node_10->left->left->right);
+
+    CUNIT_ASSERT_PTR_NOT_NULL(node_10->right);
+    CUNIT_ASSERT_INT_EQ(node_10->right->data, 15);
+
+    CUNIT_ASSERT_PTR_NOT_NULL(node_10->right->left);
+    CUNIT_ASSERT_INT_EQ(node_10->right->left->data, 12);
+    CUNIT_ASSERT_PTR_NULL(node_10->right->left->left);
+    CUNIT_ASSERT_PTR_NULL(node_10->right->left->right);
+
+    CUNIT_ASSERT_PTR_NOT_NULL(node_10->right->right);
+    CUNIT_ASSERT_INT_EQ(node_10->right->right->data, 18);
+    CUNIT_ASSERT_PTR_NULL(node_10->right->right->left);
+    CUNIT_ASSERT_PTR_NULL(node_10->right->right->right);
+}

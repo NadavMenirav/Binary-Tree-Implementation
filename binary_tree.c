@@ -22,31 +22,35 @@ TreeNode* createNode(const int data) {
 // This function inserts a new node to the tree
 TreeNode* insertNode(TreeNode* root, const int data) {
 
-    // If we receive a NULL root, we will create a new root and return the new tree. The recursion will not get here.
+    TreeNode* parent = root;
+
+    // If we receive a NULL root, we will create a new root and return the new tree.
     if (root == NULL) {
         return createNode(data);
     }
 
+    while (parent) {
+        // Now, we need to decide whether the new node should be in the left or right tree spanned by the root
+        if (data <= parent->data && hasLeftChild(parent)) {
+            parent = parent->left;
+        }
 
-    // Now, we need to decide whether the new node should be in the left or right tree spanned by the root
-    if (data <= root->data && hasLeftChild(root)) {
-        insertNode(root->left, data);
+        else if (data > parent->data && hasRightChild(parent)) {
+            parent = parent->right;
+        }
+
+        // Here we know that we need to insert the new node as a left child of current 'root'
+        else if (data <= parent->data && !hasLeftChild(parent)) {
+            parent->left = createNode(data);
+            break;
+        }
+
+        // Here we know that we need to insert the new node as a right child of current 'root'
+        else if (data > parent->data && !hasRightChild(parent)) {
+            parent->right = createNode(data);
+            break;
+        }
     }
-
-    else if (data > root->data && hasRightChild(root)) {
-        insertNode(root->right, data);
-    }
-
-    // Here we know that we need to insert the new node as a left child of current 'root'
-    else if (data <= root->data && !hasLeftChild(root)) {
-        root->left = createNode(data);
-    }
-
-    // Here we know that we need to insert the new node as a right child of current 'root'
-    else if (data > root->data && !hasRightChild(root)) {
-        root->right = createNode(data);
-    }
-
     return root;
 }
 
