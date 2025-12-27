@@ -1,6 +1,7 @@
 #include "binary_tree.h"
 
 #include <stdlib.h>
+#include <omp.h>
 
 // This function checks whether a TreeNode* is a leaf. Null is not a leaf.
 static inline bool isLeaf(const TreeNode* root);

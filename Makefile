@@ -1,5 +1,8 @@
-CC=gcc
-CFLAGS= -g -O0
+CC      := gcc
+CFLAGS  := -std=c11 -O2 -Wall -Wextra -Wpedantic \
+           -Xpreprocessor -fopenmp \
+           -I/opt/homebrew/opt/libomp/include
+LDFLAGS := -lm -L/opt/homebrew/opt/libomp/lib -lomp
 
 # 1. Separate the source files by location
 TEST_SRCS := $(wildcard tests/*.c)
