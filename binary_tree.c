@@ -30,13 +30,24 @@ TreeNode* insertNode(TreeNode* root, const int data) {
         return createNode(data);
     }
 
+    // First, we try to set the lock
+    omp_set_lock(&parent->lock);
+    omp_lock_t* lock_to_free = NULL;
     while (parent) {
+
+        // First we unset the lock of the previous parent
+        if (lock_to_free) omp_unset_lock(lock_to_free);
+
+        lock_to_free = &parent->lock;
+
         // Now, we need to decide whether the new node should be in the left or right tree spanned by the root
         if (data <= parent->data && hasLeftChild(parent)) {
+            omp_set_lock(&parent->left->lock);
             parent = parent->left;
         }
 
         else if (data > parent->data && hasRightChild(parent)) {
+            omp_set_lock(&parent->right->lock);
             parent = parent->right;
         }
 
@@ -52,6 +63,8 @@ TreeNode* insertNode(TreeNode* root, const int data) {
             break;
         }
     }
+    if (lock_to_free) omp_unset_lock(lock_to_free);
+
     return root;
 }
 
