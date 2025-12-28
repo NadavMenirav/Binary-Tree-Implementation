@@ -33,13 +33,13 @@ bool searchNode(const TreeNode* root, const int data);
 TreeNode* findMin(const TreeNode* root);
 
 // This function prints the inorder traversal
-void inorderTraversal(const TreeNode* root);
+void inorderTraversal(TreeNode* root);
 
 // This function prints the preorder traversal
-void preorderTraversal(const TreeNode* root);
+void preorderTraversal(TreeNode* root);
 
 // This function prints the postorder traversal
-void postorderTraversal(const TreeNode* root);
+void postorderTraversal(TreeNode* root);
 
 // This function free the tree
 void freeTree(TreeNode* root);

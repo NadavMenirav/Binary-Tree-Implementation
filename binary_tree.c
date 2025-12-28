@@ -301,40 +301,43 @@ TreeNode* findMin(const TreeNode* root) {
 }
 
 // Prints the inorder traversal
-void inorderTraversal(const TreeNode* root) {
+void inorderTraversal(TreeNode* root) {
     if (root == NULL) return;
 
-    TreeNode* node = (TreeNode*)root;
-    omp_set_lock(&node->lock);
+    omp_set_lock(&root->lock);
 
-    inorderTraversal(node->left);
-    printf("%d ", node->data);
-    inorderTraversal(node->right);
+    inorderTraversal(root->left);
+    printf("%d ", root->data);
+    inorderTraversal(root->right);
 
-    omp_unset_lock(&node->lock);
+    omp_unset_lock(&root->lock);
 }
 
 // Prints the preorder traversal
-void preorderTraversal(const TreeNode* root) {
+void preorderTraversal(TreeNode* root) {
     if (root == NULL) return;
 
-    TreeNode* node = (TreeNode*)root;
-    omp_set_lock(&node->lock);
+    omp_set_lock(&root->lock);
+
     printf("%d ", root->data);
     preorderTraversal(root->left);
     preorderTraversal(root->right);
-    omp_unset_lock(&node->lock);
+
+    omp_unset_lock(&root->lock);
 }
 
 // Prints the post order traversal
-void postorderTraversal(const TreeNode* root) {
+void postorderTraversal(TreeNode* root) {
+
     if (root == NULL) return;
-    TreeNode* node = (TreeNode*)root;
-    omp_set_lock(&node->lock);
+
+    omp_set_lock(&root->lock);
+
     postorderTraversal(root->left);
     postorderTraversal(root->right);
     printf("%d ", root->data);
-    omp_unset_lock(&node->lock);
+
+    omp_unset_lock(&root->lock);
 }
 
 // Free the tree
