@@ -1,6 +1,8 @@
 #!/bin/bash
 
-make clean # couldn't be asked to add .h as deps
-make
+make clean && make || exit 1
 
-./bin/test
+for i in {1..100}; do
+    echo "Iteration $i"
+    ./bin/test || { echo "Failed on iteration $i"; break; }
+done

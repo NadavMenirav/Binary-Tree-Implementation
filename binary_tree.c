@@ -78,10 +78,7 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
     TreeNode* node = root, *parent = NULL;
     bool isOnlyLeft = false, isOnlyRight = false;
 
-    // If we received a NULL we don't delete anything
-    if (root == NULL) {
-        return NULL;
-    }
+    if (root == NULL) return NULL;
 
     // Locking the node
     omp_set_lock(&node->lock);
@@ -89,29 +86,32 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
 
     // Finding the place to delete from
     while (node != NULL) {
-
-        if (lock_to_free) omp_unset_lock(lock_to_free);
-
-        lock_to_free = &node->lock;
-        if ((hasLeftChild(node) && node->left->data == data) || (hasRightChild(node) && node->right->data == data)) {
+        // Optimization: If we found the node, we stop immediately.
+        // We hold 'lock_to_free' (Parent) and 'node->lock' (Target).
+        // By setting lock_to_free = NULL, we ensure Parent stays locked.
+        if (node->data == data) {
             lock_to_free = NULL;
+            break;
         }
 
-        // If we found the node to delete
-        if (data == node->data) break;
+        if (lock_to_free) omp_unset_lock(lock_to_free);
+        lock_to_free = &node->lock;
 
-        // We didn't yet found the node to delete, but we know that it is in the left subtree of current 'node'
+        // We didn't yet found the node to delete, but we know that it is in the left subtree
         if (data <= node->data && hasLeftChild(node)) {
             omp_set_lock(&node->left->lock);
             parent = node;
             node = node->left;
         }
-
-        // We didn't yet found the node to delete, but we know that it is in the right subtree of current 'node'
+        // We didn't yet found the node to delete, but we know that it is in the right subtree
         else if (data > node->data && hasRightChild(node)) {
             omp_set_lock(&node->right->lock);
             parent = node;
             node = node->right;
+        }
+        else {
+            // Path doesn't exist (Data not found)
+            node = NULL; // Force loop exit
         }
     }
 
@@ -121,77 +121,58 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
         return root;
     }
 
-    // Now we distinguish between 3 cases
-    // Case 1: the deleted node is a leaf. In this case we need to just make the parent point to null and free the node
+    // Case 1: the deleted node is a leaf.
     if (isLeaf(node)) {
-
-        // If the given node is the root, it means this tree is only one node and we should return null
         if (!parent) {
+            omp_destroy_lock(&node->lock);
             free(node);
             return NULL;
         }
 
         if (parent->left == node) parent->left = NULL;
         else parent->right = NULL;
+
         omp_unset_lock(&parent->lock);
         omp_destroy_lock(&node->lock);
         free(node);
         return root;
     }
 
-    // Case 2: the deleted node has only one child. in this case we just make the parent point to the child and free
+    // Case 2: the deleted node has only one child.
     isOnlyLeft = hasLeftChild(node) && !hasRightChild(node);
     isOnlyRight = hasRightChild(node) && !hasLeftChild(node);
     if (isOnlyLeft || isOnlyRight) {
 
-        // If the deleted node is the root, we just make the child the new root
         if (!parent) {
-            if (isOnlyLeft) {
-                TreeNode* child = node->left;
-                root->data = child->data;
-                root->left = child->left;
-                root->right = child->right;
-                omp_destroy_lock(&child->lock);
-                free(child);
-            }
+            TreeNode* child = isOnlyLeft ? node->left : node->right;
 
-            else {
-                TreeNode* child = node->right;
-                root->data = child->data;
-                root->left = child->left;
-                root->right = child->right;
-                omp_destroy_lock(&child->lock);
-                free(child);
-            }
+            // Promote child data to root
+            node->data = child->data;
+            node->left = child->left;
+            node->right = child->right;
+
+            omp_set_lock(&child->lock); //
+            omp_unset_lock(&child->lock); // Unlock (just to ensure no one else is holding it)
+            omp_destroy_lock(&child->lock);
+            free(child);
 
             omp_unset_lock(&node->lock);
             return root;
         }
 
+        // Standard Case 2
         if (parent->left == node) {
-            if (isOnlyLeft) {
-                parent->left = node->left;
-            }
-            else {
-                parent->left = node->right;
-            }
+            parent->left = isOnlyLeft ? node->left : node->right;
         }
         else {
-            if (isOnlyLeft) {
-                parent->right = node->left;
-            }
-            else {
-                parent->right = node->right;
-            }
+            parent->right = isOnlyLeft ? node->left : node->right;
         }
+
         omp_unset_lock(&parent->lock);
         omp_destroy_lock(&node->lock);
         free(node);
         return root;
-
     }
-
-
 
     // Case 3: the deleted node has two children. In this case we find the minimal value in right subtree and replace
     if (hasLeftChild(node) && hasRightChild(node)) {
@@ -242,7 +223,6 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
     }
     return root;
 }
-
 
 // This function checks whether a given value is in the tree
 bool searchNode(const TreeNode* root, const int data) {
@@ -323,25 +303,38 @@ TreeNode* findMin(const TreeNode* root) {
 // Prints the inorder traversal
 void inorderTraversal(const TreeNode* root) {
     if (root == NULL) return;
-    inorderTraversal(root->left);
-    printf("%d ", root->data);
-    inorderTraversal(root->right);
+
+    TreeNode* node = (TreeNode*)root;
+    omp_set_lock(&node->lock);
+
+    inorderTraversal(node->left);
+    printf("%d ", node->data);
+    inorderTraversal(node->right);
+
+    omp_unset_lock(&node->lock);
 }
 
 // Prints the preorder traversal
 void preorderTraversal(const TreeNode* root) {
     if (root == NULL) return;
+
+    TreeNode* node = (TreeNode*)root;
+    omp_set_lock(&node->lock);
     printf("%d ", root->data);
     preorderTraversal(root->left);
     preorderTraversal(root->right);
+    omp_unset_lock(&node->lock);
 }
 
 // Prints the post order traversal
 void postorderTraversal(const TreeNode* root) {
     if (root == NULL) return;
+    TreeNode* node = (TreeNode*)root;
+    omp_set_lock(&node->lock);
     postorderTraversal(root->left);
     postorderTraversal(root->right);
     printf("%d ", root->data);
+    omp_unset_lock(&node->lock);
 }
 
 // Free the tree
