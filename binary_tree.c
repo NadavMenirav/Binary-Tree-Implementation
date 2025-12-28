@@ -247,23 +247,50 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
 // This function checks whether a given value is in the tree
 bool searchNode(const TreeNode* root, const int data) {
 
-    const TreeNode* node = root;
+    TreeNode* node = (TreeNode*)root;
 
+    // Locking the current node
+    omp_set_lock(&node->lock);
+    omp_lock_t* lock_to_free = NULL;
     while (node) {
 
+        if (lock_to_free) omp_unset_lock(lock_to_free);
+
+        lock_to_free = &node->lock;
+
         // If we found the data
-        if (node->data == data) return true;
+        if (node->data == data) {
+            omp_unset_lock(&node->lock);
+            return true;
+        }
 
         // We should go left
         if (data <= node->data) {
+
+            // If we should go left, but we cannot go left anymore -> return false
+            if (!node->left) {
+                omp_unset_lock(&node->lock);
+                return false;
+            }
+
+            omp_set_lock(&node->left->lock);
             node = node->left;
         }
 
         // We should go right
         else if (data > node->data) {
+
+            // If we should go right, but we cannot go right anymore-> return false
+            if (!node->right) {
+                omp_unset_lock(&node->lock);
+                return false;
+            }
+
+            omp_set_lock(&node->right->lock);
             node = node->right;
         }
     }
+
     return false;
 }
 
