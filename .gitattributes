@@ -1,3 +1,4 @@
 external/cunit.h linguist vendored
 tests/should_create_tree linguist vendored
+tests/should_be_thread_safe linguist vendored
 Makefile linguist vendored

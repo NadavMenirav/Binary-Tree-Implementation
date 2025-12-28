@@ -147,15 +147,24 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
         // If the deleted node is the root, we just make the child the new root
         if (!parent) {
             if (isOnlyLeft) {
-                root = node->left;
+                TreeNode* child = node->left;
+                root->data = child->data;
+                root->left = child->left;
+                root->right = child->right;
+                omp_destroy_lock(&child->lock);
+                free(child);
             }
 
             else {
-                root = node->right;
+                TreeNode* child = node->right;
+                root->data = child->data;
+                root->left = child->left;
+                root->right = child->right;
+                omp_destroy_lock(&child->lock);
+                free(child);
             }
 
-            omp_destroy_lock(&node->lock);
-            free(node);
+            omp_unset_lock(&node->lock);
             return root;
         }
 
@@ -188,11 +197,24 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
     if (hasLeftChild(node) && hasRightChild(node)) {
 
         // // We don't need the parent anymore
-        // omp_unset_lock()
+        if (parent) omp_unset_lock(&parent->lock);
 
         TreeNode* min_node_in_right_subtree = node->right, *parent_min_node = node;
+
+        // We catch the lock of the min_node
+        omp_set_lock(&min_node_in_right_subtree->lock);
+        omp_lock_t* lock_to_free = NULL;
+
         while (min_node_in_right_subtree != NULL) {
+
+            if (lock_to_free) omp_unset_lock(lock_to_free);
+
             if (min_node_in_right_subtree->left == NULL) break;
+
+            omp_set_lock(&min_node_in_right_subtree->left->lock);
+
+            lock_to_free = &min_node_in_right_subtree->lock;
+            if (min_node_in_right_subtree->left->left == NULL) lock_to_free = NULL;
 
             parent_min_node = min_node_in_right_subtree;
             min_node_in_right_subtree = min_node_in_right_subtree->left;
@@ -208,10 +230,14 @@ TreeNode* deleteNode(TreeNode* root, const int data) {
 
         else {
             parent_min_node->right = min_node_in_right_subtree->right;
-        }        free(min_node_in_right_subtree);
+        }
+        if (parent_min_node != node) omp_unset_lock(&parent_min_node->lock);
+        omp_destroy_lock(&min_node_in_right_subtree->lock);
+        free(min_node_in_right_subtree);
 
         // Replace 'node' with the min node
         node->data = replacement;
+        omp_unset_lock(&node->lock);
 
     }
     return root;
