@@ -114,3 +114,112 @@ CUNIT_TEST(thread_safe_search)
         }
     }
 }
+
+CUNIT_TEST(thread_safe_find_min)
+{
+    TreeNode* tree = createNode(0);
+    for (size_t i = 1; i < 100; ++i)
+    {
+        if (i % 3 == 0)
+        {
+            insertNode(tree, i);
+        }
+    }
+
+    size_t N = 100;
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            #pragma omp taskloop nogroup
+            for (size_t i = 1; i < N; i++)
+            {
+                if (i % 3 != 0)
+                {
+                    insertNode(tree, i);
+                }
+            }
+
+            #pragma omp taskloop nogroup
+            for (size_t j = 1; j < N; j++)
+            {
+                deleteNode(tree, j);
+            }
+
+            #pragma omp taskloop nogroup
+            for (size_t k = 1; k < N; k++)
+            {
+                searchNode(tree, k);
+            }
+
+            #pragma omp taskloop nogroup
+            for (size_t l = 1; l < N; l++)
+            {
+                findMin(tree);
+            }
+        }
+    }
+}
+
+CUNIT_TEST(thread_safe_traversal)
+{
+    TreeNode* tree = createNode(0);
+    for (size_t i = 1; i < 100; ++i)
+    {
+        if (i % 3 == 0)
+        {
+            insertNode(tree, i);
+        }
+    }
+
+    size_t N = 100;
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            #pragma omp taskloop nogroup
+            for (size_t i = 1; i < N; i++)
+            {
+                if (i % 3 != 0)
+                {
+                    insertNode(tree, i);
+                }
+            }
+
+            #pragma omp taskloop nogroup
+            for (size_t j = 1; j < N; j++)
+            {
+                deleteNode(tree, j);
+            }
+
+            #pragma omp taskloop nogroup
+            for (size_t k = 1; k < N; k++)
+            {
+                searchNode(tree, k);
+            }
+
+            #pragma omp taskloop nogroup
+            for (size_t l = 1; l < N; l++)
+            {
+                findMin(tree);
+            }
+
+            #pragma omp taskloop nogroup
+            for (size_t b = 1; b < N; b++)
+            {
+                if (b % 3 == 0)
+                {
+                    inorderTraversal(tree);
+                }
+                else if (b % 3 == 1)
+                {
+                    preorderTraversal(tree);
+                }
+                else
+                {
+                    postorderTraversal(tree);
+                }
+            }
+        }
+    }
+}
