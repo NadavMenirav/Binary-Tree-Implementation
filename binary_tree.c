@@ -300,8 +300,23 @@ TreeNode* findMin(const TreeNode* root) {
     // If the tree is non-existent we return null
     if (root == NULL) return NULL;
 
-    const TreeNode* node = root;
-    while (node->left != NULL) node = node->left;
+    TreeNode* node = (TreeNode*)root;
+
+    // Locking the initial node
+    omp_set_lock(&node->lock);
+    omp_lock_t* lock_to_free = NULL;
+    while (node->left != NULL) {
+
+        if (lock_to_free) omp_unset_lock(lock_to_free);
+
+        lock_to_free = &node->lock;
+
+        omp_set_lock(&node->left->lock);
+        node = node->left;
+    }
+
+    if (lock_to_free) omp_unset_lock(lock_to_free);
+    omp_unset_lock(&node->lock);
     return (TreeNode*)node;
 }
 
